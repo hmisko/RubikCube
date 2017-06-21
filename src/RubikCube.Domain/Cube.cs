@@ -1,6 +1,8 @@
 ﻿namespace RubikCube.Domain
 {
     using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Linq;
 
     /* In a classic Rubik's Cube, 
@@ -15,20 +17,33 @@
     {
         public Cube(Face[] faces)
         {
-            this.Faces = faces;
+           // this.Faces = faces;
         }
 
-        public Face[] Faces { get; }
+        // public Face[] Faces { get; }
+
+        public Face GetFace(FaceOrientation orientation)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Face GetFrontFace()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class Face
     {
-        public Face(Sticker[] stickers)
+        public Face(FaceOrientation orientation, Sticker[,] stickers)
         {
             this.Stickers = stickers;
+            this.Orientation = orientation;
         }
 
-        public Sticker[] Stickers { get; }
+        public Sticker[,] Stickers { get; }
+
+        public FaceOrientation Orientation { get; }
     }
 
     public class Sticker
@@ -43,35 +58,106 @@
 
     public enum Colour
     {
-        White, 
-        Red, 
-        Blue, 
+        White,
+        Red,
+        Blue,
         Orange,
         Green,
         Yellow
     }
 
-    public class ClassicCubeBuilder
+    public class CubeBuilder : ICubeBuilder
     {
+        private readonly IDictionary<FaceOrientation, Colour> facesColours = new Dictionary<FaceOrientation, Colour>();
+        private int size;
+
+        public ICubeBuilder SetSize(int newSize)
+        {
+            this.size = newSize;
+            return this;
+        }
+
+        public ICubeBuilder AddFace(Colour colour, FaceOrientation orientation)
+        {
+            this.facesColours.Add(orientation, colour);
+            return this;
+        }
+
         public Cube Build()
         {
-            var availableColours = Enum.GetValues(typeof(Colour)).Cast<Colour>().ToArray();
-            var faces = new Face[6];
+            this.ValidateConfiguration();
 
-            for (var i = 0; i < 6; i++)
+            var faces = new List<Face>();
+
+            foreach (var faceColour in this.facesColours)
             {
-                var colour = availableColours[i];
-                var stickers = new Sticker[9];
-
-                for (var j = 0; j < 9; j++)
+                var stickers = new Sticker[this.size, this.size];
+                for (var x = 0; x < this.size; x++)
                 {
-                    stickers[j] = new Sticker(colour);
+                    for (var y = 0; y < this.size; y++)
+                    {
+                        stickers[x, y] = new Sticker(faceColour.Value);
+                    }
                 }
 
-                faces[i] = new Face(stickers);
+                faces.Add(new Face(faceColour.Key, stickers));
             }
 
-            return new Cube(faces);
+            return new Cube(faces.ToArray());
+        }
+
+        private void ValidateConfiguration()
+        {
+            if (this.size == 0)
+            {
+                throw new Exception("Size must be set");
+            }
+
+            if (this.facesColours.Count != 6)
+            {
+                throw new Exception("All six facesColours must be set");
+            }
+        }
+    }
+
+    public enum FaceOrientation
+    {
+        Front,
+        Back,
+        Left,
+        Right,
+        Top,
+        Bottom
+    }
+
+    public interface ICubeBuilder
+    {
+        ICubeBuilder SetSize(int newSize);
+
+        ICubeBuilder AddFace(Colour colour, FaceOrientation orientation);
+
+        Cube Build();
+    }
+
+    public class ClassicCubeBuilder
+    {
+        private readonly ICubeBuilder cubeBuilder;
+
+        public ClassicCubeBuilder(ICubeBuilder cubeBuilder)
+        {
+            this.cubeBuilder = cubeBuilder;
+        }
+
+        public Cube Build()
+        {
+            return this.cubeBuilder.SetSize(3)
+                .AddFace(Colour.White, FaceOrientation.Bottom)
+                .AddFace(Colour.Yellow, FaceOrientation.Top)
+                .AddFace(Colour.Blue, FaceOrientation.Front)
+                .AddFace(Colour.Red, FaceOrientation.Right)
+                .AddFace(Colour.Orange, FaceOrientation.Left)
+                .AddFace(Colour.Green, FaceOrientation.Back)
+                .Build();
         }
     }
 }
