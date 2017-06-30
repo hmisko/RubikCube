@@ -13,16 +13,18 @@
      * and orange is opposite red, and the red, white and blue are arranged in that order in a clockwise arrangement 
      */
 
-    public class Cube
+    public class Cube : ICube
     {
-        public Cube(Face[] faces)
+        public Cube(IDictionary<FaceOrientation, Face> faces)
         {
-           // this.Faces = faces;
+
+            // todo create 3D matrix of stickers
         }
 
-        // public Face[] Faces { get; }
-
-
+        public IDictionary<FaceOrientation, Face> GetFaces()
+        {
+            throw new NotImplementedException();
+        }
 
         public Face GetFace(FaceOrientation orientation)
         {
@@ -35,17 +37,18 @@
         }
     }
 
+    public interface ICube
+    {
+    }
+
     public class Face
     {
-        public Face(FaceOrientation orientation, Sticker[,] stickers)
+        public Face(Sticker[,] stickers)
         {
             this.Stickers = stickers;
-            this.Orientation = orientation;
         }
 
         public Sticker[,] Stickers { get; }
-
-        public FaceOrientation Orientation { get; }
     }
 
     public class Sticker
@@ -85,7 +88,7 @@
             return this;
         }
 
-        public Cube Build()
+        public ICube Build()
         {
             this.ValidateConfiguration();
 
@@ -138,7 +141,7 @@
 
         ICubeBuilder AddFace(Colour colour, FaceOrientation orientation);
 
-        Cube Build();
+        ICube Build();
     }
 
     public class ClassicCubeBuilder
@@ -150,7 +153,7 @@
             this.cubeBuilder = cubeBuilder;
         }
 
-        public Cube Build()
+        public ICube Build()
         {
             return this.cubeBuilder.SetSize(3)
                 .AddFace(Colour.White, FaceOrientation.Bottom)
