@@ -15,18 +15,90 @@
 
     public class Cube : ICube
     {
-        public Cube(IDictionary<FaceOrientation, Face> faces)
-        {
+        private readonly Sticker[,,] stickers;
 
-            // todo create 3D matrix of stickers
+        private int innerSize;
+
+        public Cube(int size, IDictionary<Orientation, Face> faces)
+        {
+            this.innerSize = size + 2;
+            this.stickers = new Sticker[this.innerSize, this.innerSize, this.innerSize];
+            this.Create3DMatrix(size, faces);
         }
 
-        public IDictionary<FaceOrientation, Face> GetFaces()
+        private void Create3DMatrix(int size, IDictionary<Orientation, Face> faces)
+        {
+            foreach (var face in faces)
+            {
+                if (face.Key == Orientation.Front)
+                {
+                    for (var x = 0; x < size; x++)
+                    {
+                        for (var y = 0; y < size; y++)
+                        {
+                            this.stickers[x, y, 0] = face.Value.Stickers[x, y];
+                        }
+                    }
+                }
+                else if (face.Key == Orientation.Back)
+                {
+                    for (var x = 0; x < size; x++)
+                    {
+                        for (var y = 0; y < size; y++)
+                        {
+                            this.stickers[x, y, this.innerSize] = face.Value.Stickers[x, y];
+                        }
+                    }
+                }
+                else if (face.Key == Orientation.Left)
+                {
+                    for (var y = 0; y < size; y++)
+                    {
+                        for (var z = 0; z < size; z++)
+                        {
+                            this.stickers[0, y, z] = face.Value.Stickers[z, y];
+                        }
+                    }
+                }
+                else if (face.Key == Orientation.Right)
+                {
+                    for (var y = 0; y < size; y++)
+                    {
+                        for (var z = 0; z < size; z++)
+                        {
+                            this.stickers[this.innerSize, y, z] = face.Value.Stickers[z, y];
+                        }
+                    }
+                }
+                else if (face.Key == Orientation.Top)
+                {
+                    for (var x = 0; x < size; x++)
+                    {
+                        for (var z = 0; z < size; z++)
+                        {
+                            this.stickers[x, 0, z] = face.Value.Stickers[x, size - z];
+                        }
+                    }
+                }
+                else if (face.Key == Orientation.Bottom)
+                {
+                    for (var x = 0; x < size; x++)
+                    {
+                        for (var z = 0; z < size; z++)
+                        {
+                            this.stickers[x, this.innerSize, z] = face.Value.Stickers[x, size - z];
+                        }
+                    }
+                }
+            }
+        }
+
+        public IDictionary<Orientation, Face> GetFaces()
         {
             throw new NotImplementedException();
         }
 
-        public Face GetFace(FaceOrientation orientation)
+        public Face GetFace(Orientation orientation)
         {
             throw new NotImplementedException();
         }
@@ -73,7 +145,7 @@
 
     public class CubeBuilder : ICubeBuilder
     {
-        private readonly IDictionary<FaceOrientation, Colour> facesColours = new Dictionary<FaceOrientation, Colour>();
+        private readonly IDictionary<Orientation, Colour> orientationsColours = new Dictionary<Orientation, Colour>();
         private int size;
 
         public ICubeBuilder SetSize(int newSize)
@@ -82,9 +154,9 @@
             return this;
         }
 
-        public ICubeBuilder AddFace(Colour colour, FaceOrientation orientation)
+        public ICubeBuilder AddFace(Colour colour, Orientation orientation)
         {
-            this.facesColours.Add(orientation, colour);
+            this.orientationsColours.Add(orientation, colour);
             return this;
         }
 
@@ -92,23 +164,23 @@
         {
             this.ValidateConfiguration();
 
-            var faces = new List<Face>();
+            var faces = new Dictionary<Orientation, Face>();
 
-            foreach (var faceColour in this.facesColours)
+            foreach (var orientationColour in this.orientationsColours)
             {
                 var stickers = new Sticker[this.size, this.size];
                 for (var x = 0; x < this.size; x++)
                 {
                     for (var y = 0; y < this.size; y++)
                     {
-                        stickers[x, y] = new Sticker(faceColour.Value);
+                        stickers[x, y] = new Sticker(orientationColour.Value);
                     }
                 }
 
-                faces.Add(new Face(faceColour.Key, stickers));
+                faces.Add(orientationColour.Key, new Face(stickers));
             }
 
-            return new Cube(faces.ToArray());
+            return new Cube(this.size, faces);
         }
 
         private void ValidateConfiguration()
@@ -118,14 +190,14 @@
                 throw new Exception("Size must be set");
             }
 
-            if (this.facesColours.Count != 6)
+            if (this.orientationsColours.Count != 6)
             {
                 throw new Exception("All six facesColours must be set");
             }
         }
     }
 
-    public enum FaceOrientation
+    public enum Orientation
     {
         Front,
         Back,
@@ -139,7 +211,7 @@
     {
         ICubeBuilder SetSize(int newSize);
 
-        ICubeBuilder AddFace(Colour colour, FaceOrientation orientation);
+        ICubeBuilder AddFace(Colour colour, Orientation orientation);
 
         ICube Build();
     }
@@ -156,12 +228,12 @@
         public ICube Build()
         {
             return this.cubeBuilder.SetSize(3)
-                .AddFace(Colour.White, FaceOrientation.Bottom)
-                .AddFace(Colour.Yellow, FaceOrientation.Top)
-                .AddFace(Colour.Blue, FaceOrientation.Front)
-                .AddFace(Colour.Red, FaceOrientation.Right)
-                .AddFace(Colour.Orange, FaceOrientation.Left)
-                .AddFace(Colour.Green, FaceOrientation.Back)
+                .AddFace(Colour.White, Orientation.Bottom)
+                .AddFace(Colour.Yellow, Orientation.Top)
+                .AddFace(Colour.Blue, Orientation.Front)
+                .AddFace(Colour.Red, Orientation.Right)
+                .AddFace(Colour.Orange, Orientation.Left)
+                .AddFace(Colour.Green, Orientation.Back)
                 .Build();
         }
     }
