@@ -13,13 +13,13 @@
      * and orange is opposite red, and the red, white and blue are arranged in that order in a clockwise arrangement 
      */
 
-    public class Cube : ICube
+    public class CubeEngineEngine : ICubeEngine
     {
         private readonly Sticker[,,] stickers;
 
-        private int innerSize;
+        private readonly int innerSize;
 
-        public Cube(int size, IDictionary<Orientation, Face> faces)
+        public CubeEngineEngine(int size, IDictionary<Orientation, Face> faces)
         {
             this.innerSize = size + 2;
             this.stickers = new Sticker[this.innerSize, this.innerSize, this.innerSize];
@@ -93,23 +93,40 @@
             }
         }
 
-        public IDictionary<Orientation, Face> GetFaces()
-        {
-            throw new NotImplementedException();
-        }
+        //public IDictionary<Orientation, Face> GetFaces()
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public Face GetFace(Orientation orientation)
-        {
-            throw new NotImplementedException();
-        }
+        //public Face GetFace(Orientation orientation)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public Face GetFrontFace()
+        //public Face GetFrontFace()
+        //{
+        //    throw new NotImplementedException();
+        //}
+    }
+
+    /// <summary>
+    /// Value object that represent cube with faces with stickers
+    /// </summary>
+    public class Cube
+    {
+        public Cube(
+            Sticker[] frontFace, 
+            Sticker[] backFace, 
+            Sticker[] leftFace, 
+            Sticker[] rightFace, 
+            Sticker[] topFace, 
+            Sticker[] bottomFace)
         {
-            throw new NotImplementedException();
+            
         }
     }
 
-    public interface ICube
+    public interface ICubeEngine
     {
     }
 
@@ -160,7 +177,7 @@
             return this;
         }
 
-        public ICube Build()
+        public ICubeEngine Build()
         {
             this.ValidateConfiguration();
 
@@ -180,7 +197,7 @@
                 faces.Add(orientationColour.Key, new Face(stickers));
             }
 
-            return new Cube(this.size, faces);
+            return new CubeEngineEngine(this.size, faces);
         }
 
         private void ValidateConfiguration()
@@ -213,7 +230,7 @@
 
         ICubeBuilder AddFace(Colour colour, Orientation orientation);
 
-        ICube Build();
+        ICubeEngine Build();
     }
 
     public class ClassicCubeBuilder
@@ -225,7 +242,7 @@
             this.cubeBuilder = cubeBuilder;
         }
 
-        public ICube Build()
+        public ICubeEngine Build()
         {
             return this.cubeBuilder.SetSize(3)
                 .AddFace(Colour.White, Orientation.Bottom)
