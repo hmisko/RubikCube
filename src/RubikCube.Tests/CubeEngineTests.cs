@@ -3,6 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Runtime.CompilerServices;
+    using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
     using NUnit.Framework;
 
     [TestFixture]
@@ -17,9 +21,12 @@
             var cubeEngine = new TestableCubeEngine();
 
             // act
-            var resultMatrix = cubeEngine.TestMapCubeTo3DMatrix(cube, 3);
+            var resultMatrix = cubeEngine.TestMapCubeTo3DMatrix(cube);
 
             // assert
+
+            #region Assertions of 54 stickers
+
             void AssertStickerCoordinates(Sticker s, Point3D p) =>
                 Assert.True(resultMatrix[s] == p, $"Sticker \"{s.Color}\" has coordinates ({resultMatrix[s].X},{resultMatrix[s].Y},{resultMatrix[s].Z}) instead of ({p.X},{p.Y},{p.Z})");
 
@@ -82,6 +89,8 @@
             AssertStickerCoordinates(builder.Bottom7, new Point3D(3, 0, 1));
             AssertStickerCoordinates(builder.Bottom8, new Point3D(3, 0, 2));
             AssertStickerCoordinates(builder.Bottom9, new Point3D(3, 0, 3));
+
+            #endregion
         }
 
         [Test]
@@ -89,73 +98,79 @@
         {
             // arrange
             var builder = new TestCubeBuilder();
-            var cube = builder.Build();
             var cubeEngine = new TestableCubeEngine();
-            var stickers = new Dictionary<Sticker, Point3D>
-                           {
-                               { builder.Front1, new Point3D(1, 1, 0) },
-                               { builder.Front2, new Point3D(1, 2, 0) },
-                               { builder.Front3, new Point3D(1, 3, 0) },
-                               { builder.Front4, new Point3D(2, 1, 0) },
-                               { builder.Front5, new Point3D(2, 2, 0) },
-                               { builder.Front6, new Point3D(2, 3, 0) },
-                               { builder.Front7, new Point3D(3, 1, 0) },
-                               { builder.Front8, new Point3D(3, 2, 0) },
-                               { builder.Front9, new Point3D(3, 3, 0) },
 
-                               { builder.Back1, new Point3D(3, 1, 4) },
-                               { builder.Back2, new Point3D(3, 2, 4) },
-                               { builder.Back3, new Point3D(3, 3, 4) },
-                               { builder.Back4, new Point3D(2, 1, 4) },
-                               { builder.Back5, new Point3D(2, 2, 4) },
-                               { builder.Back6, new Point3D(2, 3, 4) },
-                               { builder.Back7, new Point3D(1, 1, 4) },
-                               { builder.Back8, new Point3D(1, 2, 4) },
-                               { builder.Back9, new Point3D(1, 3, 4) },
+            #region Set 54 sticker points
 
-                               { builder.Left1, new Point3D(0, 1, 3) },
-                               { builder.Left2, new Point3D(0, 2, 3) },
-                               { builder.Left3, new Point3D(0, 3, 3) },
-                               { builder.Left4, new Point3D(0, 1, 2) },
-                               { builder.Left5, new Point3D(0, 2, 2) },
-                               { builder.Left6, new Point3D(0, 3, 2) },
-                               { builder.Left7, new Point3D(0, 1, 1) },
-                               { builder.Left8, new Point3D(0, 2, 1) },
-                               { builder.Left9, new Point3D(0, 3, 1) },
+            var stickerPoints = new Dictionary<Sticker, Point3D>
+                                {
+                                    { builder.Front1, new Point3D(1, 1, 0) },
+                                    { builder.Front2, new Point3D(1, 2, 0) },
+                                    { builder.Front3, new Point3D(1, 3, 0) },
+                                    { builder.Front4, new Point3D(2, 1, 0) },
+                                    { builder.Front5, new Point3D(2, 2, 0) },
+                                    { builder.Front6, new Point3D(2, 3, 0) },
+                                    { builder.Front7, new Point3D(3, 1, 0) },
+                                    { builder.Front8, new Point3D(3, 2, 0) },
+                                    { builder.Front9, new Point3D(3, 3, 0) },
 
-                               { builder.Right1, new Point3D(4, 1, 1) },
-                               { builder.Right2, new Point3D(4, 2, 1) },
-                               { builder.Right3, new Point3D(4, 3, 1) },
-                               { builder.Right4, new Point3D(4, 1, 2) },
-                               { builder.Right5, new Point3D(4, 2, 2) },
-                               { builder.Right6, new Point3D(4, 3, 2) },
-                               { builder.Right7, new Point3D(4, 1, 3) },
-                               { builder.Right8, new Point3D(4, 2, 3) },
-                               { builder.Right9, new Point3D(4, 3, 3) },
+                                    { builder.Back1, new Point3D(3, 1, 4) },
+                                    { builder.Back2, new Point3D(3, 2, 4) },
+                                    { builder.Back3, new Point3D(3, 3, 4) },
+                                    { builder.Back4, new Point3D(2, 1, 4) },
+                                    { builder.Back5, new Point3D(2, 2, 4) },
+                                    { builder.Back6, new Point3D(2, 3, 4) },
+                                    { builder.Back7, new Point3D(1, 1, 4) },
+                                    { builder.Back8, new Point3D(1, 2, 4) },
+                                    { builder.Back9, new Point3D(1, 3, 4) },
 
-                               { builder.Top1, new Point3D(1, 4, 1) },
-                               { builder.Top2, new Point3D(1, 4, 2) },
-                               { builder.Top3, new Point3D(1, 4, 3) },
-                               { builder.Top4, new Point3D(2, 4, 1) },
-                               { builder.Top5, new Point3D(2, 4, 2) },
-                               { builder.Top6, new Point3D(2, 4, 3) },
-                               { builder.Top7, new Point3D(3, 4, 1) },
-                               { builder.Top8, new Point3D(3, 4, 2) },
-                               { builder.Top9, new Point3D(3, 4, 3) },
+                                    { builder.Left1, new Point3D(0, 1, 3) },
+                                    { builder.Left2, new Point3D(0, 2, 3) },
+                                    { builder.Left3, new Point3D(0, 3, 3) },
+                                    { builder.Left4, new Point3D(0, 1, 2) },
+                                    { builder.Left5, new Point3D(0, 2, 2) },
+                                    { builder.Left6, new Point3D(0, 3, 2) },
+                                    { builder.Left7, new Point3D(0, 1, 1) },
+                                    { builder.Left8, new Point3D(0, 2, 1) },
+                                    { builder.Left9, new Point3D(0, 3, 1) },
 
-                               { builder.Bottom1, new Point3D(1, 0, 1) },
-                               { builder.Bottom2, new Point3D(1, 0, 2) },
-                               { builder.Bottom3, new Point3D(1, 0, 3) },
-                               { builder.Bottom4, new Point3D(2, 0, 1) },
-                               { builder.Bottom5, new Point3D(2, 0, 2) },
-                               { builder.Bottom6, new Point3D(2, 0, 3) },
-                               { builder.Bottom7, new Point3D(3, 0, 1) },
-                               { builder.Bottom8, new Point3D(3, 0, 2) },
-                               { builder.Bottom9, new Point3D(3, 0, 3) }
-                           };
+                                    { builder.Right1, new Point3D(4, 1, 1) },
+                                    { builder.Right2, new Point3D(4, 2, 1) },
+                                    { builder.Right3, new Point3D(4, 3, 1) },
+                                    { builder.Right4, new Point3D(4, 1, 2) },
+                                    { builder.Right5, new Point3D(4, 2, 2) },
+                                    { builder.Right6, new Point3D(4, 3, 2) },
+                                    { builder.Right7, new Point3D(4, 1, 3) },
+                                    { builder.Right8, new Point3D(4, 2, 3) },
+                                    { builder.Right9, new Point3D(4, 3, 3) },
+
+                                    { builder.Top1, new Point3D(1, 4, 1) },
+                                    { builder.Top2, new Point3D(1, 4, 2) },
+                                    { builder.Top3, new Point3D(1, 4, 3) },
+                                    { builder.Top4, new Point3D(2, 4, 1) },
+                                    { builder.Top5, new Point3D(2, 4, 2) },
+                                    { builder.Top6, new Point3D(2, 4, 3) },
+                                    { builder.Top7, new Point3D(3, 4, 1) },
+                                    { builder.Top8, new Point3D(3, 4, 2) },
+                                    { builder.Top9, new Point3D(3, 4, 3) },
+
+                                    { builder.Bottom1, new Point3D(1, 0, 1) },
+                                    { builder.Bottom2, new Point3D(1, 0, 2) },
+                                    { builder.Bottom3, new Point3D(1, 0, 3) },
+                                    { builder.Bottom4, new Point3D(2, 0, 1) },
+                                    { builder.Bottom5, new Point3D(2, 0, 2) },
+                                    { builder.Bottom6, new Point3D(2, 0, 3) },
+                                    { builder.Bottom7, new Point3D(3, 0, 1) },
+                                    { builder.Bottom8, new Point3D(3, 0, 2) },
+                                    { builder.Bottom9, new Point3D(3, 0, 3) }
+                                };
+
+            #endregion
 
             // act
-            var resultCube = cubeEngine.TestGetCubeFrom3DMatrix(stickers, 3);
+            var resultCube = cubeEngine.TestGetCubeFrom3DMatrix(stickerPoints);
+
+            #region Assertions of 54 stickers
 
             void AssertFrontFace(Sticker sticker, int x, int y) =>
                 Assert.True(resultCube.FrontFace[x, y] == sticker, $"FrontFace[{x},{y}] should have {sticker.Color} instead of {resultCube.FrontFace[x, y].Color}");
@@ -234,39 +249,13 @@
             AssertRightFace(builder.Right7, 2, 0);
             AssertRightFace(builder.Right8, 2, 1);
             AssertRightFace(builder.Right9, 2, 2);
+
+            #endregion
         }
 
-        //[Test]
-        //public void CubeEngineTakesAndReturnsTheSameCube()
-        //{
-        //    // arrange
-        //    var testCubeBuilder = new TestCubeBuilder();
-        //    var cube = testCubeBuilder.Build();
-
-        //    // act
-        //    var cubeEngine = new TestableCubeEngine();
-        //    var resultCube = cubeEngine.TestCubeProcessing(cube);
-
-        //    // assert
-        //    for (int x = 0; x < 3; x++)
-        //    {
-        //        for (int y = 0; y < 3; y++)
-        //        {
-        //            Assert.True(resultCube.FrontFace[x, y].Color == cube.FrontFace[x, y].Color);
-        //            Assert.True(resultCube.BackFace[x, y].Color == cube.BackFace[x, y].Color);
-        //            Assert.True(resultCube.LeftFace[x, y].Color == cube.LeftFace[x, y].Color);
-        //            Assert.True(resultCube.RightFace[x, y].Color == cube.RightFace[x, y].Color);
-        //            Assert.True(resultCube.TopFace[x, y].Color == cube.TopFace[x, y].Color);
-        //            Assert.True(resultCube.BottomFace[x, y].Color == cube.BottomFace[x, y].Color);
-        //        }
-        //    }
-        //}
-
         // rotate: przesunac macierz zeby 2,2 byl w na srodku osi, wykonac obrot macierzy o 90st.
-
-
         [Test]
-        public void CheckFrontFaceStateAfterFrontFaceClockwiseRotation()
+        public void CubeShouldHaveProperStateAfterFrontFaceCounterClockwiseRotation()
         {
             // arrange
             var testCubeBuilder = new TestCubeBuilder();
@@ -274,25 +263,35 @@
             var cubeEngine = new CubeEngine();
 
             // act
-            var resultCube = cubeEngine.Rotate(cube, Faces.Front, RotationDirection.Clockwise);
+            //var resultCube = cubeEngine.Rotate(cube, Faces.Front, RotationDirection.CounterClockwise);
+            var resultCube = cubeEngine.RotateCounterclockwise(cube, c => c.FrontFace);
 
-            /* Clockwise rotation:
 
-                7 8 9      1 4 7
-                4 5 6  >>  2 5 8 
-                1 2 3      3 6 9
+            /* CounterClockwise rotation:
+
+                3 6 9      9 8 7
+                2 5 8  >>  6 5 4 
+                1 4 7      3 2 1
              */
 
+
             // assert
-            Assert.True(resultCube.FrontFace[0, 0].Color == "front3");
-            Assert.True(resultCube.FrontFace[1, 0].Color == "front6");
-            Assert.True(resultCube.FrontFace[2, 0].Color == "front9");
-            Assert.True(resultCube.FrontFace[0, 1].Color == "front2");
-            Assert.True(resultCube.FrontFace[1, 1].Color == "front5");
-            Assert.True(resultCube.FrontFace[2, 1].Color == "front8");
-            Assert.True(resultCube.FrontFace[0, 2].Color == "front1");
-            Assert.True(resultCube.FrontFace[1, 2].Color == "front4");
-            Assert.True(resultCube.FrontFace[2, 2].Color == "front7");
+            void AssertFrontFace(Sticker sticker, int x, int y) =>
+                Assert.True(resultCube.FrontFace[x, y] == sticker, $"FrontFace[{x},{y}] should have {sticker.Color} instead of {resultCube.FrontFace[x, y].Color}");
+
+            // todo prepare assert data in one array, in the same way like it is in testCubeBuilder
+
+            AssertFrontFace(testCubeBuilder.Front3, 0, 0);
+            AssertFrontFace(testCubeBuilder.Front2, 1, 0);
+            AssertFrontFace(testCubeBuilder.Front1, 2, 0);
+            AssertFrontFace(testCubeBuilder.Front6, 0, 1);
+            AssertFrontFace(testCubeBuilder.Front5, 1, 1);
+            AssertFrontFace(testCubeBuilder.Front4, 2, 1);
+            AssertFrontFace(testCubeBuilder.Front9, 0, 2);
+            AssertFrontFace(testCubeBuilder.Front8, 1, 2);
+            AssertFrontFace(testCubeBuilder.Front7, 2, 2);
+
+            // todo asserts for rest of stickers ....
         }
 
 
@@ -361,131 +360,93 @@
 
     public class TestableCubeEngine : CubeEngine
     {
-        public IDictionary<Sticker, Point3D> TestMapCubeTo3DMatrix(Cube cube, int size)
+        public IDictionary<Sticker, Point3D> TestMapCubeTo3DMatrix(Cube cube)
         {
-            return this.MapCubeTo3DMatrix(cube, size);
+            return this.MapCubeTo3DMatrix(cube);
         }
 
-        public Cube TestGetCubeFrom3DMatrix(IDictionary<Sticker, Point3D> stickers, int size)
+        public Cube TestGetCubeFrom3DMatrix(IDictionary<Sticker, Point3D> stickers)
         {
-            return this.GetCubeFrom3DMatrix(stickers, size);
+            return this.GetCubeFrom3DMatrix(stickers);
         }
     }
 
     public class CubeEngine
     {
-        public Cube Rotate(Cube cube, Faces face, RotationDirection direction)
+        private const int Size = 3;
+
+        public Cube RotateClockwise(Cube cube, Expression<Func<Cube, Sticker[,]>> face)
         {
-            throw new NotImplementedException();
-            //var size = this.CalculateCubeSize(cube);
-            //var stickers = this.MapCubeTo3DMatrix(cube, size);
-
-            ///*
-            //    x' = xcos90 - ysin90
-            //    y' = xsin90 + ycos90
-            // */
-
-
-            //var dict = new Dictionary<Sticker, Point3D>();
-
-            //switch (face)
-            //{
-            //    case Faces.Front:
-
-            //        for (var i = 1; i < size + 2; i++)
-            //        {
-            //            for (var j = 1; j < size + 2; j++)
-            //            {
-            //                 dict.Add(stickers[i, j, 0], new Point3D(i, j, 0));
-            //            }
-            //        }
-
-            //        break;
-            //    case Faces.Back:
-            //        break;
-            //    case Faces.Top:
-            //        break;
-            //    case Faces.Bottom:
-            //        break;
-            //    case Faces.Left:
-            //        break;
-            //    case Faces.Right:
-            //        break;
-            //}
-
-
-            //throw new System.NotImplementedException();
+            return this.Rotate(cube, face, (x, y) => RotatePoints(x, y, true));
         }
 
-        protected int CalculateCubeSize(Cube cube)
+        public Cube RotateCounterclockwise(Cube cube, Expression<Func<Cube, Sticker[,]>> face)
         {
-            return (int) Math.Sqrt(cube.FrontFace.Length);
+            return this.Rotate(cube, face, (x, y) => RotatePoints(x, y, false));
         }
 
-        //protected Sticker[,,] MapCubeTo3DMatrix(Cube cube, int size)
-        //{
-        //    var stickers = new Sticker[size + 2, size + 2, size + 2];
+        private Cube Rotate(Cube cube,
+                            Expression<Func<Cube, Sticker[,]>> face,
+                            Func<int, int, (int x, int y)> rotatePoints)
+        {
+            var faceExpression = (MemberExpression) face.Body;
+            var faceName = faceExpression.Member.Name;
 
-        //    for (var i = 0; i < size; i++)
-        //    {
-        //        for (var j = 0; j < size; j++)
-        //        {
-        //            stickers[i + 1, j + 1, 0] = cube.FrontFace[i, j];
-        //            stickers[size + 1 - i, j + 1, size + 1] = cube.BackFace[i, j];
-        //            stickers[0, i + 1, size + 1 - j] = cube.LeftFace[i, j];
-        //            stickers[size + 1, i + 1, j + 1] = cube.RightFace[i, j];
-        //            stickers[i + 1, size + 1, j + 1] = cube.TopFace[i, j];
-        //            stickers[i + 1, 0, j + 1] = cube.BottomFace[i, j];
-        //        }
-        //    }
+            var stickerPoints = this.MapCubeTo3DMatrix(cube);
 
-        //    return stickers;
-        //}
+            if (faceName == nameof(cube.FrontFace))
+            {
+                foreach (var stickerPoint in stickerPoints.ToList())
+                {
+                    (int oldX, int oldY, int oldZ) = (stickerPoint.Value.X, stickerPoint.Value.Y, stickerPoint.Value.Z);
 
-        //protected Cube GetCubeFrom3DMatrix(Sticker[,,] stickers, int size)
-        //{
-        //    var frontFace = new Sticker[3, 3];
-        //    var backFace = new Sticker[3, 3];
-        //    var leftFace = new Sticker[3, 3];
-        //    var rightFace = new Sticker[3, 3];
-        //    var topFace = new Sticker[3, 3];
-        //    var bottomFace = new Sticker[3, 3];
+                    if (oldZ == 0 || oldZ == 1)
+                    {
+                        (int newX, int newY) = rotatePoints(oldX, oldY);
+                        stickerPoints[stickerPoint.Key] = new Point3D(newX, newY, oldZ);
+                    }
+                }
+            }
 
-        //    for (var i = 0; i < size; i++)
-        //    {
-        //        for (var j = 0; j < size; j++)
-        //        {
-        //            frontFace[i, j] = stickers[i + 1, j + 1, 0];
-        //            backFace[i, j] = stickers[size + 1 - i, j + 1, size + 1];
-        //            leftFace[i, j] = stickers[0, i + 1, size + 1 - j];
-        //            rightFace[i, j] = stickers[size + 1, i + 1, j + 1];
-        //            topFace[i, j] = stickers[i + 1, size + 1, j + 1];
-        //            bottomFace[i, j] = stickers[i + 1, 0, j + 1];
-        //        }
-        //    }
+            return this.GetCubeFrom3DMatrix(stickerPoints);
+        }
 
-        //    return new Cube(
-        //        frontFace,
-        //        backFace,
-        //        topFace,
-        //        bottomFace,
-        //        leftFace,
-        //        rightFace);
-        //}
+        private static (int x, int y) RotatePoints(int x, int y, bool isClockwise)
+        {
+            // rotating face needs to be moved to the point (0,0) 
+            // before ration matrix will be calculated
+            const int offset = 2;
+            (int x, int y) result = (x - offset, y - offset);
 
-        protected IDictionary<Sticker, Point3D> MapCubeTo3DMatrix(Cube cube, int cubeSize)
+            if (isClockwise)
+            {
+                const double angle = -Math.PI * 0.5;
+                result.x = (int)Math.Round((x - offset) * Math.Cos(angle) + (y - offset) * Math.Sin(angle)) + offset;
+                result.y = (int)Math.Round(-(x - offset) * Math.Sin(angle) + (y - offset) * Math.Cos(angle)) + offset;
+            }
+            else
+            {
+                const double angle = Math.PI * 0.5;
+                result.x = (int)Math.Round((x - offset) * Math.Cos(angle) - (y - offset) * Math.Sin(angle)) + offset;
+                result.y = (int)Math.Round((x - offset) * Math.Sin(angle) + (y - offset) * Math.Cos(angle)) + offset;
+            }
+
+            return result;
+        }
+
+        protected IDictionary<Sticker, Point3D> MapCubeTo3DMatrix(Cube cube)
         {
             var stickerPoints = new Dictionary<Sticker, Point3D>();
 
-            for (var i = 0; i < cubeSize; i++)
+            for (var i = 0; i < Size; i++)
             {
-                for (var j = 0; j < cubeSize; j++)
+                for (var j = 0; j < Size; j++)
                 {
                     stickerPoints.Add(cube.FrontFace[i, j], new Point3D(i + 1, j + 1, 0));
-                    stickerPoints.Add(cube.BackFace[i, j], new Point3D(cubeSize - i, j + 1, cubeSize + 1));
-                    stickerPoints.Add(cube.LeftFace[i, j], new Point3D(0, j + 1, cubeSize - i));
-                    stickerPoints.Add(cube.RightFace[i, j], new Point3D(cubeSize + 1, j + 1, i + 1));
-                    stickerPoints.Add(cube.TopFace[i, j], new Point3D(i + 1, cubeSize + 1, j + 1));
+                    stickerPoints.Add(cube.BackFace[i, j], new Point3D(Size - i, j + 1, Size + 1));
+                    stickerPoints.Add(cube.LeftFace[i, j], new Point3D(0, j + 1, Size - i));
+                    stickerPoints.Add(cube.RightFace[i, j], new Point3D(Size + 1, j + 1, i + 1));
+                    stickerPoints.Add(cube.TopFace[i, j], new Point3D(i + 1, Size + 1, j + 1));
                     stickerPoints.Add(cube.BottomFace[i, j], new Point3D(i + 1, 0, j + 1));
                 }
             }
@@ -493,7 +454,7 @@
             return stickerPoints;
         }
 
-        protected Cube GetCubeFrom3DMatrix(IDictionary<Sticker, Point3D> stickerPoints, int cubeSize)
+        protected Cube GetCubeFrom3DMatrix(IDictionary<Sticker, Point3D> stickerPoints)
         {
             var frontFace = new Sticker[3, 3];
             var backFace = new Sticker[3, 3];
@@ -511,19 +472,19 @@
                 {
                     frontFace[point.X - 1, point.Y - 1] = sticker;
                 }
-                if (point.Z == cubeSize + 1)
+                if (point.Z == Size + 1)
                 {
-                    backFace[cubeSize - point.X, point.Y - 1] = sticker;
+                    backFace[Size - point.X, point.Y - 1] = sticker;
                 }
                 if (point.X == 0)
                 {
-                    leftFace[cubeSize - point.Z, point.Y - 1] = sticker;
+                    leftFace[Size - point.Z, point.Y - 1] = sticker;
                 }
-                if (point.X == cubeSize + 1)
+                if (point.X == Size + 1)
                 {
                     rightFace[point.Z - 1, point.Y - 1] = sticker;
                 }
-                if (point.Y == cubeSize + 1)
+                if (point.Y == Size + 1)
                 {
                     topFace[point.X - 1, point.Z - 1] = sticker;
                 }
