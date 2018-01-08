@@ -1,5 +1,0 @@
-D:\GitHub\RubikCube\src\RubikCube.Domain\obj\Debug\RubikCube.Domain.csprojResolveAssemblyReference.cache
-D:\GitHub\RubikCube\src\RubikCube.Domain\bin\Debug\RubikCube.Domain.dll
-D:\GitHub\RubikCube\src\RubikCube.Domain\bin\Debug\RubikCube.Domain.pdb
-D:\GitHub\RubikCube\src\RubikCube.Domain\obj\Debug\RubikCube.Domain.dll
-D:\GitHub\RubikCube\src\RubikCube.Domain\obj\Debug\RubikCube.Domain.pdb
