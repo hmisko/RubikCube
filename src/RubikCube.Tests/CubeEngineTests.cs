@@ -12,8 +12,6 @@
     [TestFixture]
     public class CubeEngineTests
     {
-        // todo clean repository - recreate solution, put proper git-ignore files and copy codebase
-
         [Test]
         public void CubeEngineShouldMapCubeTo3DMatrix()
         {
@@ -255,48 +253,119 @@
             #endregion
         }
 
-        // rotate: przesunac macierz zeby 2,2 byl w na srodku osi, wykonac obrot macierzy o 90st.
         [Test]
         public void CubeShouldHaveProperStateAfterFrontFaceCounterClockwiseRotation()
         {
             // arrange
-            var testCubeBuilder = new TestCubeBuilder();
-            var cube = testCubeBuilder.Build();
+            var cube = BuildTestCube();
             var cubeEngine = new CubeEngine();
 
             // act
-            //var resultCube = cubeEngine.Rotate(cube, Faces.Front, RotationDirection.CounterClockwise);
             var resultCube = cubeEngine.RotateCounterclockwise(cube, c => c.FrontFace);
 
-
-            /* CounterClockwise rotation:
-
-                3 6 9      9 8 7
-                2 5 8  >>  6 5 4 
-                1 4 7      3 2 1
-             */
-
-
             // assert
-            void AssertFrontFace(Sticker sticker, int x, int y) =>
-                Assert.True(resultCube.FrontFace[x, y] == sticker, $"FrontFace[{x},{y}] should have {sticker.Color} instead of {resultCube.FrontFace[x, y].Color}");
+            var builder = new StringBasedCubeBuilder();
+
+            builder.SetFrontFace(@"F3 F6 F9
+                                   F2 F5 F8
+                                   F1 F4 F7");
+
+            builder.SetBackFace(@"B1 B2 B3
+                                  B4 B5 B6
+                                  B7 B8 B9");
+
+            builder.SetTopFace(@"T1 T2 T3
+                                 T4 T5 T6
+                                 T7 T8 T9");
+
+            builder.SetBottomFace(@"D1 D2 D3
+                                    D4 D5 D6
+                                    D7 D8 D9");
+
+            builder.SetLeftFace(@"L1 L2 L3
+                                  L4 L5 L6
+                                  L7 L8 L9");
+
+            builder.SetRightFace(@"R1 R2 R3
+                                   R4 R5 R6
+                                   R7 R8 R9");
+
+            var expectedCube = builder.Build();
+
+            AssertCube(resultCube, expectedCube);
+
+
+            //void AssertFrontFace(Sticker sticker, int x, int y) =>
+            //    Assert.True(resultCube.FrontFace[x, y] == sticker, $"FrontFace[{x},{y}] should have {sticker.Color} instead of {resultCube.FrontFace[x, y].Color}");
 
             // todo prepare assert data in one array, in the same way like it is in testCubeBuilder
 
             // todo maybe ... resign from testBuilder, use Sticker.White, or TestableSticker.Front1 and put it to standard builder
 
-
-            AssertFrontFace(testCubeBuilder.Front3, 0, 0);
-            AssertFrontFace(testCubeBuilder.Front2, 1, 0);
-            AssertFrontFace(testCubeBuilder.Front1, 2, 0);
-            AssertFrontFace(testCubeBuilder.Front6, 0, 1);
-            AssertFrontFace(testCubeBuilder.Front5, 1, 1);
-            AssertFrontFace(testCubeBuilder.Front4, 2, 1);
-            AssertFrontFace(testCubeBuilder.Front9, 0, 2);
-            AssertFrontFace(testCubeBuilder.Front8, 1, 2);
-            AssertFrontFace(testCubeBuilder.Front7, 2, 2);
+            //AssertFrontFace(testCubeBuilder.Front3, 0, 0);
+            //AssertFrontFace(testCubeBuilder.Front2, 1, 0);
+            //AssertFrontFace(testCubeBuilder.Front1, 2, 0);
+            //AssertFrontFace(testCubeBuilder.Front6, 0, 1);
+            //AssertFrontFace(testCubeBuilder.Front5, 1, 1);
+            //AssertFrontFace(testCubeBuilder.Front4, 2, 1);
+            //AssertFrontFace(testCubeBuilder.Front9, 0, 2);
+            //AssertFrontFace(testCubeBuilder.Front8, 1, 2);
+            //AssertFrontFace(testCubeBuilder.Front7, 2, 2);
 
             // todo asserts for rest of stickers ....
+        }
+
+        private static void AssertCube(Cube resultCube, Cube expectedCube)
+        {
+            void AssertFace(string name, Sticker[,] resultFace, Sticker[,] expectedFace)
+            {
+                for (var i = 0; i < 3; i++)
+                {
+                    for (var j = 0; j < 3; j++)
+                    {
+                        Assert.That(resultFace[i, j], Is.EqualTo(expectedFace[i, j]),
+                                    $"{name}[{i},{j}] should have {expectedFace[i, j].Color} instead of {resultFace[i, j].Color}");
+                    }
+                }
+            }
+
+            AssertFace(nameof(resultCube.FrontFace), resultCube.FrontFace, expectedCube.FrontFace);
+            AssertFace(nameof(resultCube.BackFace), resultCube.BackFace, expectedCube.BackFace);
+            AssertFace(nameof(resultCube.TopFace), resultCube.TopFace, expectedCube.TopFace);
+            AssertFace(nameof(resultCube.BottomFace), resultCube.BottomFace, expectedCube.BottomFace);
+            AssertFace(nameof(resultCube.LeftFace), resultCube.LeftFace, expectedCube.LeftFace);
+            AssertFace(nameof(resultCube.RightFace), resultCube.RightFace, expectedCube.RightFace);
+        }
+
+        private static Cube BuildTestCube()
+        {
+            var builder = new StringBasedCubeBuilder();
+
+            builder.SetFrontFace(@"F1 F2 F3
+                                   F4 F5 F6
+                                   F7 F8 F9");
+
+            builder.SetBackFace(@"B1 B2 B3
+                                  B4 B5 B6
+                                  B7 B8 B9");
+
+            builder.SetTopFace(@"T1 T2 T3
+                                 T4 T5 T6
+                                 T7 T8 T9");
+
+            builder.SetBottomFace(@"D1 D2 D3
+                                    D4 D5 D6
+                                    D7 D8 D9");
+
+            builder.SetLeftFace(@"L1 L2 L3
+                                  L4 L5 L6
+                                  L7 L8 L9");
+
+            builder.SetRightFace(@"R1 R2 R3
+                                   R4 R5 R6
+                                   R7 R8 R9");
+
+            return builder.Build();
         }
 
 
@@ -461,12 +530,19 @@
             {
                 for (var j = 0; j < Size; j++)
                 {
-                    stickerPoints.Add(cube.FrontFace[i, j], new Point3D(i + 1, j + 1, 0));
-                    stickerPoints.Add(cube.BackFace[i, j], new Point3D(Size - i, j + 1, Size + 1));
-                    stickerPoints.Add(cube.LeftFace[i, j], new Point3D(0, j + 1, Size - i));
-                    stickerPoints.Add(cube.RightFace[i, j], new Point3D(Size + 1, j + 1, i + 1));
-                    stickerPoints.Add(cube.TopFace[i, j], new Point3D(i + 1, Size + 1, j + 1));
-                    stickerPoints.Add(cube.BottomFace[i, j], new Point3D(i + 1, 0, j + 1));
+                    stickerPoints.Add(cube.FrontFace[i, j], new Point3D(i + 1, Size - j, 0));
+                    stickerPoints.Add(cube.BackFace[i, j], new Point3D(Size - i, Size - j, Size + 1));
+                    stickerPoints.Add(cube.LeftFace[i, j], new Point3D(0, Size - j, Size - i));
+                    stickerPoints.Add(cube.RightFace[i, j], new Point3D(Size + 1, Size - j, i + 1));
+                    stickerPoints.Add(cube.TopFace[i, j], new Point3D(i + 1, Size + 1, Size - j));
+                    stickerPoints.Add(cube.BottomFace[i, j], new Point3D(i + 1, 0, Size - j));
+
+                    //stickerPoints.Add(cube.FrontFace[i, j], new Point3D(i + 1, j + 1, 0));
+                    //stickerPoints.Add(cube.BackFace[i, j], new Point3D(Size - i, j + 1, Size + 1));
+                    //stickerPoints.Add(cube.LeftFace[i, j], new Point3D(0, j + 1, Size - i));
+                    //stickerPoints.Add(cube.RightFace[i, j], new Point3D(Size + 1, j + 1, i + 1));
+                    //stickerPoints.Add(cube.TopFace[i, j], new Point3D(i + 1, Size + 1, j + 1));
+                    //stickerPoints.Add(cube.BottomFace[i, j], new Point3D(i + 1, 0, j + 1));
                 }
             }
 
@@ -599,6 +675,7 @@
         Green,
         Yellow
     }
+
 
     public class TestCubeBuilder
     {
