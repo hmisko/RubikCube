@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArrayBasedCubeBuilderTests.cs" />
     <Compile Include="CubeEngineTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringBasedCubeBuilderTests.cs" />

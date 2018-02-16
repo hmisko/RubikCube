@@ -5,8 +5,6 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Linq.Expressions;
-    using System.Runtime.CompilerServices;
-    using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
     using NUnit.Framework;
 
     [TestFixture]
@@ -265,7 +263,7 @@
 
             // assert
             var builder = new StringBasedCubeBuilder();
-
+            
             builder.SetFrontFace(@"F3 F6 F9
                                    F2 F5 F8
                                    F1 F4 F7");
@@ -455,6 +453,8 @@
 
     public class CubeEngine
     {
+        // todo add validation against cube size (should be 3x3) 
+
         private const int Size = 3;
 
         public Cube RotateClockwise(Cube cube, Expression<Func<Cube, Sticker[,]>> face)
