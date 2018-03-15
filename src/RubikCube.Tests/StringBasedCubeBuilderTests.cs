@@ -113,7 +113,7 @@
 
                 for (var j = 0; j < stickers.Length; j++)
                 {
-                    face[j, i] = new Sticker(stickers[j]);
+                    face[j, i] = Sticker.FromColor(stickers[j]);
                 }
             }
         }

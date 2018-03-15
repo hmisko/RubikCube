@@ -11,85 +11,109 @@
     public class CubeEngineTests
     {
         [Test]
-        public void CubeEngineShouldMapCubeTo3DMatrix()
+        public void CubeEngineShouldMapCubeToMatrix()
         {
-            // arrange
-            var builder = new TestCubeBuilder();
-            var cube = builder.Build();
+            // arrange 
+            var cube = BuildeSampleCube();
             var cubeEngine = new TestableCubeEngine();
 
             // act
-            var resultMatrix = cubeEngine.TestMapCubeTo3DMatrix(cube);
+            var matrixOfStickers = cubeEngine.TestMapCubeTo3DMatrix_NEW(cube);
 
             // assert
+            void AssertStickerPoints(params (int x, int y, int z, string value)[] points)
+            {
+                foreach (var point in points)
+                {
+                    Assert.That(matrixOfStickers.Contains(new Point<Sticker>(point.x, point.y, point.z, Sticker.FromColor(point.value))),
+                                $"Sticker \"{point.value}\" ({point.x},{point.y},{point.z}) not found.");
+                }
+            }
 
-            #region Assertions of 54 stickers
-
-            void AssertStickerCoordinates(Sticker s, Point3D p) =>
-                Assert.True(resultMatrix[s] == p, $"Sticker \"{s.Color}\" has coordinates ({resultMatrix[s].X},{resultMatrix[s].Y},{resultMatrix[s].Z}) instead of ({p.X},{p.Y},{p.Z})");
-
-            AssertStickerCoordinates(builder.Front1, new Point3D(1, 1, 0));
-            AssertStickerCoordinates(builder.Front2, new Point3D(1, 2, 0));
-            AssertStickerCoordinates(builder.Front3, new Point3D(1, 3, 0));
-            AssertStickerCoordinates(builder.Front4, new Point3D(2, 1, 0));
-            AssertStickerCoordinates(builder.Front5, new Point3D(2, 2, 0));
-            AssertStickerCoordinates(builder.Front6, new Point3D(2, 3, 0));
-            AssertStickerCoordinates(builder.Front7, new Point3D(3, 1, 0));
-            AssertStickerCoordinates(builder.Front8, new Point3D(3, 2, 0));
-            AssertStickerCoordinates(builder.Front9, new Point3D(3, 3, 0));
-
-            AssertStickerCoordinates(builder.Back1, new Point3D(3, 1, 4));
-            AssertStickerCoordinates(builder.Back2, new Point3D(3, 2, 4));
-            AssertStickerCoordinates(builder.Back3, new Point3D(3, 3, 4));
-            AssertStickerCoordinates(builder.Back4, new Point3D(2, 1, 4));
-            AssertStickerCoordinates(builder.Back5, new Point3D(2, 2, 4));
-            AssertStickerCoordinates(builder.Back6, new Point3D(2, 3, 4));
-            AssertStickerCoordinates(builder.Back7, new Point3D(1, 1, 4));
-            AssertStickerCoordinates(builder.Back8, new Point3D(1, 2, 4));
-            AssertStickerCoordinates(builder.Back9, new Point3D(1, 3, 4));
-
-            AssertStickerCoordinates(builder.Left1, new Point3D(0, 1, 3));
-            AssertStickerCoordinates(builder.Left2, new Point3D(0, 2, 3));
-            AssertStickerCoordinates(builder.Left3, new Point3D(0, 3, 3));
-            AssertStickerCoordinates(builder.Left4, new Point3D(0, 1, 2));
-            AssertStickerCoordinates(builder.Left5, new Point3D(0, 2, 2));
-            AssertStickerCoordinates(builder.Left6, new Point3D(0, 3, 2));
-            AssertStickerCoordinates(builder.Left7, new Point3D(0, 1, 1));
-            AssertStickerCoordinates(builder.Left8, new Point3D(0, 2, 1));
-            AssertStickerCoordinates(builder.Left9, new Point3D(0, 3, 1));
-
-            AssertStickerCoordinates(builder.Right1, new Point3D(4, 1, 1));
-            AssertStickerCoordinates(builder.Right2, new Point3D(4, 2, 1));
-            AssertStickerCoordinates(builder.Right3, new Point3D(4, 3, 1));
-            AssertStickerCoordinates(builder.Right4, new Point3D(4, 1, 2));
-            AssertStickerCoordinates(builder.Right5, new Point3D(4, 2, 2));
-            AssertStickerCoordinates(builder.Right6, new Point3D(4, 3, 2));
-            AssertStickerCoordinates(builder.Right7, new Point3D(4, 1, 3));
-            AssertStickerCoordinates(builder.Right8, new Point3D(4, 2, 3));
-            AssertStickerCoordinates(builder.Right9, new Point3D(4, 3, 3));
-
-            AssertStickerCoordinates(builder.Top1, new Point3D(1, 4, 1));
-            AssertStickerCoordinates(builder.Top2, new Point3D(1, 4, 2));
-            AssertStickerCoordinates(builder.Top3, new Point3D(1, 4, 3));
-            AssertStickerCoordinates(builder.Top4, new Point3D(2, 4, 1));
-            AssertStickerCoordinates(builder.Top5, new Point3D(2, 4, 2));
-            AssertStickerCoordinates(builder.Top6, new Point3D(2, 4, 3));
-            AssertStickerCoordinates(builder.Top7, new Point3D(3, 4, 1));
-            AssertStickerCoordinates(builder.Top8, new Point3D(3, 4, 2));
-            AssertStickerCoordinates(builder.Top9, new Point3D(3, 4, 3));
-
-            AssertStickerCoordinates(builder.Bottom1, new Point3D(1, 0, 1));
-            AssertStickerCoordinates(builder.Bottom2, new Point3D(1, 0, 2));
-            AssertStickerCoordinates(builder.Bottom3, new Point3D(1, 0, 3));
-            AssertStickerCoordinates(builder.Bottom4, new Point3D(2, 0, 1));
-            AssertStickerCoordinates(builder.Bottom5, new Point3D(2, 0, 2));
-            AssertStickerCoordinates(builder.Bottom6, new Point3D(2, 0, 3));
-            AssertStickerCoordinates(builder.Bottom7, new Point3D(3, 0, 1));
-            AssertStickerCoordinates(builder.Bottom8, new Point3D(3, 0, 2));
-            AssertStickerCoordinates(builder.Bottom9, new Point3D(3, 0, 3));
-
-            #endregion
+            AssertStickerPoints(
+                (1, 1, 0, "f1"), (2, 1, 0, "f2"), (3, 1, 0, "f3"), (1, 2, 0, "f4"), (2, 2, 0, "f5"), (3, 2, 0, "f6"), (1, 3, 0, "f7"), (2, 3, 0, "f8"), (3, 3, 0, "f9"),
+                (1, 1, 4, "b1"), (2, 1, 4, "b2"), (3, 1, 4, "b3"), (1, 2, 4, "b4"), (2, 2, 4, "b5"), (3, 2, 4, "b6"), (1, 3, 4, "b7"), (2, 3, 4, "b8"), (3, 3, 4, "b9"),
+                (0, 1, 3, "l1"), (0, 1, 2, "l2"), (0, 1, 1, "l3"), (0, 2, 3, "l4"), (0, 2, 2, "l5"), (0, 2, 1, "l6"), (0, 3, 3, "l7"), (0, 3, 2, "l8"), (0, 3, 1, "l9"),
+                (4, 1, 3, "r1"), (4, 1, 2, "r2"), (4, 1, 1, "r3"), (4, 2, 3, "r4"), (4, 2, 2, "r5"), (4, 2, 1, "r6"), (4, 3, 3, "r7"), (4, 3, 2, "r8"), (4, 3, 1, "r9"),
+                (1, 4, 1, "t1"), (2, 4, 1, "t2"), (3, 4, 1, "t3"), (1, 4, 2, "t4"), (2, 4, 2, "t5"), (3, 4, 2, "t6"), (1, 4, 3, "t7"), (2, 4, 3, "t8"), (3, 4, 3, "t9"),
+                (1, 0, 1, "d1"), (2, 0, 1, "d2"), (3, 0, 1, "d3"), (1, 0, 2, "d4"), (2, 0, 2, "d5"), (3, 0, 2, "d6"), (1, 0, 3, "d7"), (2, 0, 3, "d8"), (3, 0, 3, "d9"));
         }
+
+        [Test]
+        public void CubeEngineShouldGetCubeFromMatrix()
+        {
+            // arrange 
+            var cubeEngine = new TestableCubeEngine();
+            var matrixOfStickers = cubeEngine.TestMapCubeTo3DMatrix_NEW(BuildeSampleCube());
+
+            // act
+            var cube = cubeEngine.TestGetCubeFrom3DMatrix_NEW(matrixOfStickers);
+
+            // assert
+            void AssertFace(Sticker[,] face, params (int x, int y, string value)[] points)
+            {
+                foreach (var point in points)
+                {
+                    Assert.True(face[point.x, point.y] == Sticker.FromColor(point.value),
+                                $"FrontFace[{point.x},{point.y}] should have color \"{point.value}\" instead of \"{face[point.x, point.y].Color}\"");
+                }
+            }
+
+            AssertFace(cube.FrontFace, (0, 0, "f1"), (1, 0, "f2"), (2, 0, "f3"), (0, 1, "f4"), (1, 1, "f5"), (2, 1, "f6"), (0, 2, "f7"), (1, 2, "f8"), (2, 2, "f9"));
+            AssertFace(cube.BackFace, (0, 0, "b1"), (1, 0, "b2"), (2, 0, "b3"), (0, 1, "b4"), (1, 1, "b5"), (2, 1, "b6"), (0, 2, "b7"), (1, 2, "b8"), (2, 2, "b9"));
+            AssertFace(cube.TopFace, (0, 0, "t1"), (1, 0, "t2"), (2, 0, "t3"), (0, 1, "t4"), (1, 1, "t5"), (2, 1, "t6"), (0, 2, "t7"), (1, 2, "t8"), (2, 2, "t9"));
+            AssertFace(cube.BottomFace, (0, 0, "d1"), (1, 0, "d2"), (2, 0, "d3"), (0, 1, "d4"), (1, 1, "d5"), (2, 1, "d6"), (0, 2, "d7"), (1, 2, "d8"), (2, 2, "d9"));
+            AssertFace(cube.LeftFace, (0, 0, "l1"), (1, 0, "l2"), (2, 0, "l3"), (0, 1, "l4"), (1, 1, "l5"), (2, 1, "l6"), (0, 2, "l7"), (1, 2, "l8"), (2, 2, "l9"));
+            AssertFace(cube.RightFace, (0, 0, "r1"), (1, 0, "r2"), (2, 0, "r3"), (0, 1, "r4"), (1, 1, "r5"), (2, 1, "r6"), (0, 2, "r7"), (1, 2, "r8"), (2, 2, "r9"));
+        }
+
+        private static Cube BuildeSampleCube()
+        {
+            var builder = new RotatedArrayBasedCubeBuilder();
+            builder.SetFrontFace(new[,]
+                                 {
+                                     { "f7", "f8", "f9" },
+                                     { "f4", "f5", "f6" },
+                                     { "f1", "f2", "f3" }
+                                 });
+            builder.SetBackFace(new[,]
+                                {
+                                    { "b7", "b8", "b9" },
+                                    { "b4", "b5", "b6" },
+                                    { "b1", "b2", "b3" }
+                                });
+            builder.SetTopFace(new[,]
+                               {
+                                   { "t7", "t8", "t9" },
+                                   { "t4", "t5", "t6" },
+                                   { "t1", "t2", "t3" }
+                               });
+            builder.SetBottomFace(new[,]
+                                  {
+                                      { "d7", "d8", "d9" },
+                                      { "d4", "d5", "d6" },
+                                      { "d1", "d2", "d3" }
+                                  });
+            builder.SetLeftFace(new[,]
+                                {
+                                    { "l7", "l8", "l9" },
+                                    { "l4", "l5", "l6" },
+                                    { "l1", "l2", "l3" }
+                                });
+            builder.SetRightFace(new[,]
+                                 {
+                                     { "r7", "r8", "r9" },
+                                     { "r4", "r5", "r6" },
+                                     { "r1", "r2", "r3" }
+                                 });
+
+            var cube = builder.Build();
+            return cube;
+        }
+
+
+        /********* OLD VERSION *************/
+
 
         [Test]
         public void CubeEngineShouldGetCubeFrom3DMatrix()
@@ -263,7 +287,7 @@
 
             // assert
             var builder = new StringBasedCubeBuilder();
-            
+
             builder.SetFrontFace(@"F3 F6 F9
                                    F2 F5 F8
                                    F1 F4 F7");
@@ -394,17 +418,21 @@
 
     public struct Sticker
     {
-        public static Sticker White = new Sticker("White");
-        public static Sticker Red = new Sticker("Red");
-        public static Sticker Blue = new Sticker("Blue");
-        public static Sticker Orange = new Sticker("Orange");
-        public static Sticker Green = new Sticker("Green");
-        public static Sticker Yellow = new Sticker("Yellow");
+        public static Sticker White = FromColor("White");
+        public static Sticker Red = FromColor("Red");
+        public static Sticker Blue = FromColor("Blue");
+        public static Sticker Orange = FromColor("Orange");
+        public static Sticker Green = FromColor("Green");
+        public static Sticker Yellow = FromColor("Yellow");
 
-        // todo made this constructor protected
-        public Sticker(string color)
+        private Sticker(string color)
         {
             this.Color = color;
+        }
+
+        public static Sticker FromColor(string color)
+        {
+            return new Sticker(color);
         }
 
         public string Color { get; }
@@ -448,6 +476,16 @@
         public Cube TestGetCubeFrom3DMatrix(IDictionary<Sticker, Point3D> stickers)
         {
             return this.GetCubeFrom3DMatrix(stickers);
+        }
+
+        public IList<Point<Sticker>> TestMapCubeTo3DMatrix_NEW(Cube cube)
+        {
+            return this.MapCubeTo3DMatrix_NEW(cube);
+        }
+
+        public Cube TestGetCubeFrom3DMatrix_NEW(IList<Point<Sticker>> matrixOfStickers)
+        {
+            return this.GetCubeFrom3DMatrix_NEW(matrixOfStickers);
         }
     }
 
@@ -506,6 +544,8 @@
 
             (int x, int y) result = (x - offset, y - offset);
 
+            // todo use external class for this
+
             if (isClockwise)
             {
                 const double angle = -Math.PI * 0.5;
@@ -522,27 +562,95 @@
             return result;
         }
 
+        protected IList<Point<Sticker>> MapCubeTo3DMatrix_NEW(Cube cube)
+        {
+            var result = new List<Point<Sticker>>();
+
+            for (var i = 0; i < Size; i++)
+            {
+                for (var j = 0; j < Size; j++)
+                {
+                    result.Add(new Point<Sticker>(i + 1, j + 1, 0, cube.FrontFace[i, j]));
+                    result.Add(new Point<Sticker>(Size - i, j + 1, Size + 1, cube.BackFace[i, j]));
+                    result.Add(new Point<Sticker>(0, j + 1, Size - i, cube.LeftFace[i, j]));
+                    result.Add(new Point<Sticker>(Size + 1, j + 1, i + 1, cube.RightFace[i, j]));
+                    result.Add(new Point<Sticker>(i + 1, Size + 1, j + 1, cube.TopFace[i, j]));
+                    result.Add(new Point<Sticker>(i + 1, 0, j + 1, cube.BottomFace[i, j]));
+                }
+            }
+
+            return result;
+        }
+
+        protected Cube GetCubeFrom3DMatrix_NEW(IList<Point<Sticker>> matrixOfStickers)
+        {
+            var frontFace = new Sticker[3, 3];
+            var backFace = new Sticker[3, 3];
+            var leftFace = new Sticker[3, 3];
+            var rightFace = new Sticker[3, 3];
+            var topFace = new Sticker[3, 3];
+            var bottomFace = new Sticker[3, 3];
+
+            foreach (var point in matrixOfStickers)
+            {
+                if (point.Z == 0)
+                {
+                    frontFace[point.X - 1, point.Y - 1] = point.Value;
+                }
+                if (point.Z == Size + 1)
+                {
+                    backFace[Size - point.X, point.Y - 1] = point.Value;
+                }
+                if (point.X == 0)
+                {
+                    leftFace[Size - point.Z, point.Y - 1] = point.Value;
+                }
+                if (point.X == Size + 1)
+                {
+                    rightFace[point.Z - 1, point.Y - 1] = point.Value;
+                }
+                if (point.Y == Size + 1)
+                {
+                    topFace[point.X - 1, point.Z - 1] = point.Value;
+                }
+                if (point.Y == 0)
+                {
+                    bottomFace[point.X - 1, point.Z - 1] = point.Value;
+                }
+            }
+
+            return new Cube(
+                frontFace,
+                backFace,
+                topFace,
+                bottomFace,
+                leftFace,
+                rightFace);
+        }
+
         protected IDictionary<Sticker, Point3D> MapCubeTo3DMatrix(Cube cube)
         {
+            // todo use List<Point>, where Point<Value> { X,Y,Z,Value } 
+
             var stickerPoints = new Dictionary<Sticker, Point3D>();
 
             for (var i = 0; i < Size; i++)
             {
                 for (var j = 0; j < Size; j++)
                 {
-                    stickerPoints.Add(cube.FrontFace[i, j], new Point3D(i + 1, Size - j, 0));
-                    stickerPoints.Add(cube.BackFace[i, j], new Point3D(Size - i, Size - j, Size + 1));
-                    stickerPoints.Add(cube.LeftFace[i, j], new Point3D(0, Size - j, Size - i));
-                    stickerPoints.Add(cube.RightFace[i, j], new Point3D(Size + 1, Size - j, i + 1));
-                    stickerPoints.Add(cube.TopFace[i, j], new Point3D(i + 1, Size + 1, Size - j));
-                    stickerPoints.Add(cube.BottomFace[i, j], new Point3D(i + 1, 0, Size - j));
+                    //stickerPoints.Add(cube.FrontFace[i, j], new Point3D(i + 1, Size - j, 0));
+                    //stickerPoints.Add(cube.BackFace[i, j], new Point3D(Size - i, Size - j, Size + 1));
+                    //stickerPoints.Add(cube.LeftFace[i, j], new Point3D(0, Size - j, Size - i));
+                    //stickerPoints.Add(cube.RightFace[i, j], new Point3D(Size + 1, Size - j, i + 1));
+                    //stickerPoints.Add(cube.TopFace[i, j], new Point3D(i + 1, Size + 1, Size - j));
+                    //stickerPoints.Add(cube.BottomFace[i, j], new Point3D(i + 1, 0, Size - j));
 
-                    //stickerPoints.Add(cube.FrontFace[i, j], new Point3D(i + 1, j + 1, 0));
-                    //stickerPoints.Add(cube.BackFace[i, j], new Point3D(Size - i, j + 1, Size + 1));
-                    //stickerPoints.Add(cube.LeftFace[i, j], new Point3D(0, j + 1, Size - i));
-                    //stickerPoints.Add(cube.RightFace[i, j], new Point3D(Size + 1, j + 1, i + 1));
-                    //stickerPoints.Add(cube.TopFace[i, j], new Point3D(i + 1, Size + 1, j + 1));
-                    //stickerPoints.Add(cube.BottomFace[i, j], new Point3D(i + 1, 0, j + 1));
+                    stickerPoints.Add(cube.FrontFace[i, j], new Point3D(i + 1, j + 1, 0));
+                    stickerPoints.Add(cube.BackFace[i, j], new Point3D(Size - i, j + 1, Size + 1));
+                    stickerPoints.Add(cube.LeftFace[i, j], new Point3D(0, j + 1, Size - i));
+                    stickerPoints.Add(cube.RightFace[i, j], new Point3D(Size + 1, j + 1, i + 1));
+                    stickerPoints.Add(cube.TopFace[i, j], new Point3D(i + 1, Size + 1, j + 1));
+                    stickerPoints.Add(cube.BottomFace[i, j], new Point3D(i + 1, 0, j + 1));
                 }
             }
 
@@ -596,6 +704,44 @@
                 bottomFace,
                 leftFace,
                 rightFace);
+        }
+    }
+
+    public struct Point<T>
+    {
+        public Point(int x, int y, int z, T value)
+        {
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
+            this.Value = value;
+        }
+
+        public int X { get; }
+
+        public int Y { get; }
+
+        public int Z { get; }
+        public T Value { get; }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Point<T> d && this == d;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.X.GetHashCode() ^ this.Y.GetHashCode() ^ this.Z.GetHashCode();
+        }
+
+        public static bool operator ==(Point<T> p1, Point<T> p2)
+        {
+            return p1.X == p2.X && p1.Y == p2.Y && p1.Z == p2.Z;
+        }
+
+        public static bool operator !=(Point<T> p1, Point<T> p2)
+        {
+            return !(p1 == p2);
         }
     }
 
@@ -679,65 +825,65 @@
 
     public class TestCubeBuilder
     {
-        public readonly Sticker Front1 = new Sticker("front1");
-        public readonly Sticker Front2 = new Sticker("front2");
-        public readonly Sticker Front3 = new Sticker("front3");
-        public readonly Sticker Front4 = new Sticker("front4");
-        public readonly Sticker Front5 = new Sticker("front5");
-        public readonly Sticker Front6 = new Sticker("front6");
-        public readonly Sticker Front7 = new Sticker("front7");
-        public readonly Sticker Front8 = new Sticker("front8");
-        public readonly Sticker Front9 = new Sticker("front9");
+        public readonly Sticker Front1 = Sticker.FromColor("front1");
+        public readonly Sticker Front2 = Sticker.FromColor("front2");
+        public readonly Sticker Front3 = Sticker.FromColor("front3");
+        public readonly Sticker Front4 = Sticker.FromColor("front4");
+        public readonly Sticker Front5 = Sticker.FromColor("front5");
+        public readonly Sticker Front6 = Sticker.FromColor("front6");
+        public readonly Sticker Front7 = Sticker.FromColor("front7");
+        public readonly Sticker Front8 = Sticker.FromColor("front8");
+        public readonly Sticker Front9 = Sticker.FromColor("front9");
 
-        public readonly Sticker Back1 = new Sticker("back1");
-        public readonly Sticker Back2 = new Sticker("back2");
-        public readonly Sticker Back3 = new Sticker("back3");
-        public readonly Sticker Back4 = new Sticker("back4");
-        public readonly Sticker Back5 = new Sticker("back5");
-        public readonly Sticker Back6 = new Sticker("back6");
-        public readonly Sticker Back7 = new Sticker("back7");
-        public readonly Sticker Back8 = new Sticker("back8");
-        public readonly Sticker Back9 = new Sticker("back9");
+        public readonly Sticker Back1 = Sticker.FromColor("back1");
+        public readonly Sticker Back2 = Sticker.FromColor("back2");
+        public readonly Sticker Back3 = Sticker.FromColor("back3");
+        public readonly Sticker Back4 = Sticker.FromColor("back4");
+        public readonly Sticker Back5 = Sticker.FromColor("back5");
+        public readonly Sticker Back6 = Sticker.FromColor("back6");
+        public readonly Sticker Back7 = Sticker.FromColor("back7");
+        public readonly Sticker Back8 = Sticker.FromColor("back8");
+        public readonly Sticker Back9 = Sticker.FromColor("back9");
 
-        public readonly Sticker Left1 = new Sticker("Left1");
-        public readonly Sticker Left2 = new Sticker("Left2");
-        public readonly Sticker Left3 = new Sticker("Left3");
-        public readonly Sticker Left4 = new Sticker("Left4");
-        public readonly Sticker Left5 = new Sticker("Left5");
-        public readonly Sticker Left6 = new Sticker("Left6");
-        public readonly Sticker Left7 = new Sticker("Left7");
-        public readonly Sticker Left8 = new Sticker("Left8");
-        public readonly Sticker Left9 = new Sticker("Left9");
+        public readonly Sticker Left1 = Sticker.FromColor("Left1");
+        public readonly Sticker Left2 = Sticker.FromColor("Left2");
+        public readonly Sticker Left3 = Sticker.FromColor("Left3");
+        public readonly Sticker Left4 = Sticker.FromColor("Left4");
+        public readonly Sticker Left5 = Sticker.FromColor("Left5");
+        public readonly Sticker Left6 = Sticker.FromColor("Left6");
+        public readonly Sticker Left7 = Sticker.FromColor("Left7");
+        public readonly Sticker Left8 = Sticker.FromColor("Left8");
+        public readonly Sticker Left9 = Sticker.FromColor("Left9");
 
-        public readonly Sticker Right1 = new Sticker("right1");
-        public readonly Sticker Right2 = new Sticker("right2");
-        public readonly Sticker Right3 = new Sticker("right3");
-        public readonly Sticker Right4 = new Sticker("right4");
-        public readonly Sticker Right5 = new Sticker("right5");
-        public readonly Sticker Right6 = new Sticker("right6");
-        public readonly Sticker Right7 = new Sticker("right7");
-        public readonly Sticker Right8 = new Sticker("right8");
-        public readonly Sticker Right9 = new Sticker("right9");
+        public readonly Sticker Right1 = Sticker.FromColor("right1");
+        public readonly Sticker Right2 = Sticker.FromColor("right2");
+        public readonly Sticker Right3 = Sticker.FromColor("right3");
+        public readonly Sticker Right4 = Sticker.FromColor("right4");
+        public readonly Sticker Right5 = Sticker.FromColor("right5");
+        public readonly Sticker Right6 = Sticker.FromColor("right6");
+        public readonly Sticker Right7 = Sticker.FromColor("right7");
+        public readonly Sticker Right8 = Sticker.FromColor("right8");
+        public readonly Sticker Right9 = Sticker.FromColor("right9");
 
-        public readonly Sticker Top1 = new Sticker("top1");
-        public readonly Sticker Top2 = new Sticker("top2");
-        public readonly Sticker Top3 = new Sticker("top3");
-        public readonly Sticker Top4 = new Sticker("top4");
-        public readonly Sticker Top5 = new Sticker("top5");
-        public readonly Sticker Top6 = new Sticker("top6");
-        public readonly Sticker Top7 = new Sticker("top7");
-        public readonly Sticker Top8 = new Sticker("top8");
-        public readonly Sticker Top9 = new Sticker("top9");
+        public readonly Sticker Top1 = Sticker.FromColor("top1");
+        public readonly Sticker Top2 = Sticker.FromColor("top2");
+        public readonly Sticker Top3 = Sticker.FromColor("top3");
+        public readonly Sticker Top4 = Sticker.FromColor("top4");
+        public readonly Sticker Top5 = Sticker.FromColor("top5");
+        public readonly Sticker Top6 = Sticker.FromColor("top6");
+        public readonly Sticker Top7 = Sticker.FromColor("top7");
+        public readonly Sticker Top8 = Sticker.FromColor("top8");
+        public readonly Sticker Top9 = Sticker.FromColor("top9");
 
-        public readonly Sticker Bottom1 = new Sticker("bottom1");
-        public readonly Sticker Bottom2 = new Sticker("bottom2");
-        public readonly Sticker Bottom3 = new Sticker("bottom3");
-        public readonly Sticker Bottom4 = new Sticker("bottom4");
-        public readonly Sticker Bottom5 = new Sticker("bottom5");
-        public readonly Sticker Bottom6 = new Sticker("bottom6");
-        public readonly Sticker Bottom7 = new Sticker("bottom7");
-        public readonly Sticker Bottom8 = new Sticker("bottom8");
-        public readonly Sticker Bottom9 = new Sticker("bottom9");
+        public readonly Sticker Bottom1 = Sticker.FromColor("bottom1");
+        public readonly Sticker Bottom2 = Sticker.FromColor("bottom2");
+        public readonly Sticker Bottom3 = Sticker.FromColor("bottom3");
+        public readonly Sticker Bottom4 = Sticker.FromColor("bottom4");
+        public readonly Sticker Bottom5 = Sticker.FromColor("bottom5");
+        public readonly Sticker Bottom6 = Sticker.FromColor("bottom6");
+        public readonly Sticker Bottom7 = Sticker.FromColor("bottom7");
+        public readonly Sticker Bottom8 = Sticker.FromColor("bottom8");
+        public readonly Sticker Bottom9 = Sticker.FromColor("bottom9");
 
         public Cube Build()
         {
@@ -780,4 +926,91 @@
                 });
         }
     }
+
+
+    /*
+            [Test]
+        public void CubeEngineShouldMapCubeTo3DMatrix()
+        {
+            // arrange
+            var builder = new TestCubeBuilder();
+            var cube = builder.Build();
+            var cubeEngine = new TestableCubeEngine();
+
+            // act
+            var resultMatrix = cubeEngine.TestMapCubeTo3DMatrix(cube);
+
+            // assert
+
+            #region Assertions of 54 stickers
+
+            void AssertStickerCoordinates(Sticker s, Point3D p) =>
+                Assert.True(resultMatrix[s] == p, $"Sticker \"{s.Color}\" has coordinates ({resultMatrix[s].X},{resultMatrix[s].Y},{resultMatrix[s].Z}) instead of ({p.X},{p.Y},{p.Z})");
+
+            AssertStickerCoordinates(builder.Front1, new Point3D(1, 1, 0));
+            AssertStickerCoordinates(builder.Front2, new Point3D(1, 2, 0));
+            AssertStickerCoordinates(builder.Front3, new Point3D(1, 3, 0));
+            AssertStickerCoordinates(builder.Front4, new Point3D(2, 1, 0));
+            AssertStickerCoordinates(builder.Front5, new Point3D(2, 2, 0));
+            AssertStickerCoordinates(builder.Front6, new Point3D(2, 3, 0));
+            AssertStickerCoordinates(builder.Front7, new Point3D(3, 1, 0));
+            AssertStickerCoordinates(builder.Front8, new Point3D(3, 2, 0));
+            AssertStickerCoordinates(builder.Front9, new Point3D(3, 3, 0));
+
+            AssertStickerCoordinates(builder.Back1, new Point3D(3, 1, 4));
+            AssertStickerCoordinates(builder.Back2, new Point3D(3, 2, 4));
+            AssertStickerCoordinates(builder.Back3, new Point3D(3, 3, 4));
+            AssertStickerCoordinates(builder.Back4, new Point3D(2, 1, 4));
+            AssertStickerCoordinates(builder.Back5, new Point3D(2, 2, 4));
+            AssertStickerCoordinates(builder.Back6, new Point3D(2, 3, 4));
+            AssertStickerCoordinates(builder.Back7, new Point3D(1, 1, 4));
+            AssertStickerCoordinates(builder.Back8, new Point3D(1, 2, 4));
+            AssertStickerCoordinates(builder.Back9, new Point3D(1, 3, 4));
+
+            AssertStickerCoordinates(builder.Left1, new Point3D(0, 1, 3));
+            AssertStickerCoordinates(builder.Left2, new Point3D(0, 2, 3));
+            AssertStickerCoordinates(builder.Left3, new Point3D(0, 3, 3));
+            AssertStickerCoordinates(builder.Left4, new Point3D(0, 1, 2));
+            AssertStickerCoordinates(builder.Left5, new Point3D(0, 2, 2));
+            AssertStickerCoordinates(builder.Left6, new Point3D(0, 3, 2));
+            AssertStickerCoordinates(builder.Left7, new Point3D(0, 1, 1));
+            AssertStickerCoordinates(builder.Left8, new Point3D(0, 2, 1));
+            AssertStickerCoordinates(builder.Left9, new Point3D(0, 3, 1));
+
+            AssertStickerCoordinates(builder.Right1, new Point3D(4, 1, 1));
+            AssertStickerCoordinates(builder.Right2, new Point3D(4, 2, 1));
+            AssertStickerCoordinates(builder.Right3, new Point3D(4, 3, 1));
+            AssertStickerCoordinates(builder.Right4, new Point3D(4, 1, 2));
+            AssertStickerCoordinates(builder.Right5, new Point3D(4, 2, 2));
+            AssertStickerCoordinates(builder.Right6, new Point3D(4, 3, 2));
+            AssertStickerCoordinates(builder.Right7, new Point3D(4, 1, 3));
+            AssertStickerCoordinates(builder.Right8, new Point3D(4, 2, 3));
+            AssertStickerCoordinates(builder.Right9, new Point3D(4, 3, 3));
+
+            AssertStickerCoordinates(builder.Top1, new Point3D(1, 4, 1));
+            AssertStickerCoordinates(builder.Top2, new Point3D(1, 4, 2));
+            AssertStickerCoordinates(builder.Top3, new Point3D(1, 4, 3));
+            AssertStickerCoordinates(builder.Top4, new Point3D(2, 4, 1));
+            AssertStickerCoordinates(builder.Top5, new Point3D(2, 4, 2));
+            AssertStickerCoordinates(builder.Top6, new Point3D(2, 4, 3));
+            AssertStickerCoordinates(builder.Top7, new Point3D(3, 4, 1));
+            AssertStickerCoordinates(builder.Top8, new Point3D(3, 4, 2));
+            AssertStickerCoordinates(builder.Top9, new Point3D(3, 4, 3));
+
+            AssertStickerCoordinates(builder.Bottom1, new Point3D(1, 0, 1));
+            AssertStickerCoordinates(builder.Bottom2, new Point3D(1, 0, 2));
+            AssertStickerCoordinates(builder.Bottom3, new Point3D(1, 0, 3));
+            AssertStickerCoordinates(builder.Bottom4, new Point3D(2, 0, 1));
+            AssertStickerCoordinates(builder.Bottom5, new Point3D(2, 0, 2));
+            AssertStickerCoordinates(builder.Bottom6, new Point3D(2, 0, 3));
+            AssertStickerCoordinates(builder.Bottom7, new Point3D(3, 0, 1));
+            AssertStickerCoordinates(builder.Bottom8, new Point3D(3, 0, 2));
+            AssertStickerCoordinates(builder.Bottom9, new Point3D(3, 0, 3));
+
+            #endregion
+        }
+
+
+
+     */
 }
